@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MapKit
 import SafariServices
 
 class MealDetailViewController: ViewController {
@@ -42,14 +43,14 @@ class MealDetailViewController: ViewController {
     private lazy var imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
-		imageView.layer.cornerRadius = 20
+		imageView.layer.cornerRadius = 14
 		imageView.clipsToBounds = true
         return imageView
     }()
     
     private lazy var counterLabel: BadgeLabel = {
         let label = BadgeLabel()
-        label.font = .systemFont(ofSize: 18, weight: .semibold)
+        label.font = .systemFont(ofSize: 17, weight: .semibold)
         label.textColor = UIColor.htw.textHeadline
         label.backgroundColor = UIColor(hex: 0xE8E8E8)
         return label
@@ -57,7 +58,7 @@ class MealDetailViewController: ViewController {
 	
 	private lazy var priceLabel: BadgeLabel = {
 		let label = BadgeLabel()
-		label.font = .systemFont(ofSize: 18, weight: .semibold)
+		label.font = .systemFont(ofSize: 17, weight: .semibold)
 		label.textColor = UIColor.htw.textHeadline
 		label.backgroundColor = UIColor(hex: 0xCFCFCF)
 		return label
@@ -65,10 +66,17 @@ class MealDetailViewController: ViewController {
 
     private lazy var nameLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 18, weight: .semibold)
+        label.font = .systemFont(ofSize: 17, weight: .semibold)
         label.textColor = UIColor.htw.textHeadline
         label.numberOfLines = 0
         return label
+    }()
+    
+    private lazy var mapView: MKMapView = {
+        let map = MKMapView()
+        map.layer.cornerRadius = 14
+        map.clipsToBounds = true
+        return map
     }()
     
     private lazy var moreButton: ReactiveButton = {
@@ -116,7 +124,6 @@ class MealDetailViewController: ViewController {
 
 	private func setupUI() {
 		// ScrollView
-		
 		self.view.add(self.scrollView)
 		
 		let layoutGuide = self.view.htw.safeAreaLayoutGuide
@@ -128,7 +135,6 @@ class MealDetailViewController: ViewController {
 		])
 		
 		// Image
-		
 		self.imageView.translatesAutoresizingMaskIntoConstraints = false
 		self.imageContainerView.add(self.imageView)
 		
@@ -140,7 +146,6 @@ class MealDetailViewController: ViewController {
 		])
 		
 		// SubViews
-        
         let stackView = UIStackView(arrangedSubviews: [self.counterLabel, self.priceLabel])
         stackView.axis = .horizontal
         stackView.spacing = Const.spacing
@@ -148,6 +153,7 @@ class MealDetailViewController: ViewController {
         self.scrollView.add(self.imageContainerView,
                             stackView,
                             self.nameLabel,
+                            self.mapView,
                             self.moreButton) { v in
                                 v.translatesAutoresizingMaskIntoConstraints = false
         }
@@ -170,13 +176,18 @@ class MealDetailViewController: ViewController {
 			self.nameLabel.trailingAnchor.constraint(equalTo: self.scrollView.trailingAnchor, constant: -Const.margin),
 			self.nameLabel.bottomAnchor.constraint(lessThanOrEqualTo: self.moreButton.topAnchor),
 			self.nameLabel.widthAnchor.constraint(equalTo: self.imageView.widthAnchor),
-			
-			self.moreButton.leadingAnchor.constraint(equalTo: self.scrollView.leadingAnchor, constant: Const.margin),
-			self.moreButton.topAnchor.constraint(equalTo: self.nameLabel.bottomAnchor, constant: Const.margin),
-			self.moreButton.trailingAnchor.constraint(equalTo: self.scrollView.trailingAnchor, constant: -Const.margin),
-			self.moreButton.bottomAnchor.constraint(equalTo: self.scrollView.bottomAnchor, constant: -Const.margin),
-			self.moreButton.heightAnchor.constraint(equalToConstant: 40),
-			self.moreButton.widthAnchor.constraint(equalTo: self.imageView.widthAnchor)
+            
+            self.moreButton.leadingAnchor.constraint(equalTo: self.scrollView.leadingAnchor, constant: Const.margin),
+            self.moreButton.topAnchor.constraint(equalTo: self.nameLabel.bottomAnchor, constant: Const.spacing),
+            self.moreButton.trailingAnchor.constraint(equalTo: self.scrollView.trailingAnchor, constant: -Const.margin),
+            self.moreButton.heightAnchor.constraint(equalToConstant: 40),
+            self.moreButton.widthAnchor.constraint(equalTo: self.imageView.widthAnchor),
+
+            self.mapView.leadingAnchor.constraint(equalTo: self.scrollView.leadingAnchor, constant: Const.margin),
+            self.mapView.topAnchor.constraint(equalTo: self.moreButton.bottomAnchor, constant: Const.margin),
+            self.mapView.trailingAnchor.constraint(equalTo: self.scrollView.trailingAnchor, constant: -Const.margin),
+            self.mapView.heightAnchor.constraint(equalTo: self.mapView.widthAnchor, multiplier: 0.6),
+            self.mapView.bottomAnchor.constraint(equalTo: self.scrollView.bottomAnchor, constant: -Const.margin)
 		])
 	}
 	
@@ -190,7 +201,12 @@ class MealDetailViewController: ViewController {
         
         self.priceLabel.text = viewModel.price
         self.priceLabel.isHidden =  viewModel.price == nil || viewModel.price == ""
-		
+        
+        // TODO: Replace with dynamic data
+        let center = CLLocationCoordinate2D(latitude: 51.0342255, longitude: 13.7323254)
+        self.mapView.setRegion(MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)), animated: false)
+        self.mapView.addAnnotation(CanteenMapPin(Canteen.reichenbachstrasse))
+        
         self.view.layoutIfNeeded()
     }
     

@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreLocation
+import MapKit
 import RxSwift
 
 struct Canteen {
@@ -115,5 +116,18 @@ extension Canteen {
 
     func getMeals(network: Network) -> Observable<[Meal]> {
         return network.getArray(url: "http://lucas-vogel.de/mensa2/backend", params: ["mensaId": self.id.rawValue])
+    }
+}
+
+class CanteenMapPin: NSObject, MKAnnotation {
+    let canteen: Canteen
+    var title: String?
+    var subtitle: String?
+    var coordinate: CLLocationCoordinate2D
+    
+    init(_ canteen: Canteen) {
+        self.canteen = canteen
+        self.title = canteen.name
+        self.coordinate = canteen.coordinate ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
     }
 }
